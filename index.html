@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+	<head>
+		<title>Centerpoints</title>
+		<script language="javascript" type="text/javascript" src="jquery-3.1.1.min.js"></script>
+		<script language="javascript" type="text/javascript" src="p5.min.js"></script>
+		<script language="javascript" type="text/javascript" src="p5.dom.min.js"></script>
+		<script language="javascript" type="text/javascript" src="geometry.js"></script>
+		<script language="javascript" type="text/javascript" src="canvas.js"></script>
+		<script language="javascript" type="text/javascript" src="app.js"></script>
+		<link rel="stylesheet" type="text/css" href="styles.css">
+	</head>
+	
+	<body>
+		<h1 id="pageheader">Centerpoints</h1>
+		<div id="maincanvas"></div>
+		<div id ="input">
+			<span id="numpointsinput">
+				Number of points: <input id="numpoints" type="number" name="numpoints" min="3" max="100">
+			</span>
+		</div>
+		<div id="speed">
+			<input type='radio' value='slow' name='speed' class='speedoption' id='slowoption'></input>
+			<label class='speedlabel' for='slowoption'>Slow</label>
+			<input type='radio' value='normal' name='speed' class='speedoption' id='normaloption' checked></input>
+			<label class='speedlabel' for='normaloption'>Normal</label>
+			<input type='radio' value='fast' name='speed' class='speedoption' id='fastoption'></input>
+			<label class='speedlabel' for='fastoption'>Fast</label>
+			<input type='radio' value='noanimation' name='speed' class='speedoption' id='noanimationoption' disabled></input>
+			<label class='speedlabel' for='noanimationoption'>No animation</label>
+		</div>
+		<p class="description">
+			Given a set of points, a point is called a centerpoint if any hyperplane passing through this point
+			splits the set of points such that at least 1/(d + 1) points are on either side of
+			the hyperplane.
+		</p>
+		<p class="description">
+			A point p is considered a centerpoint of a set of 1D points S if at least 1/2 of the
+			points in S fall on either side of p. This is commonly referred to as the median of S.
+		</p>
+		<p class="description">
+			A point p is considered a centerpoint of a set of 2D points S if at least 1/3rd of the 
+			point in S fall on either side of l, where l is any line that passes through p.
+			In most cases, there is not one unique centerpoint.  A set of points has an area
+			that contains all of its centerpoints.
+		</p>
+	</body>
+
+</html>

@@ -1,0 +1,48 @@
+body {
+	background: #CCC;
+}
+
+#pageheader {
+	text-align: center;
+	margin-bottom: 5px;
+}
+
+.description {
+	text-align: center;
+	margin: auto;
+	max-width: 700px;
+	padding: 5px;
+}
+
+#maincanvas {
+	width: 500px;
+	height: 500px;
+	border: 2px solid black;
+	margin: auto;
+	margin-top: 10px;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+button {
+	margin: 0px 10px;
+}
+
+#speed, #input {
+	text-align: center;
+	padding-top: 20px;
+}
+
+#speed {
+	margin-bottom: 10px;
+}
+
+.speedlabel {
+	margin-left: 5px;
+}
+
+.speedoption {
+	margin-right: 5px;
+}
