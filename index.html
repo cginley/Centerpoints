@@ -14,7 +14,21 @@
 	
 	<body>
 		<h1 id="pageheader">Centerpoints</h1>
-		<div id="maincanvas"></div>
+		<table id="pagebody">
+			<tr>
+				<td class="countcell">
+					<div class="count" id="leftcount"></div>
+					<div class="mincount" id="leftmin"></div>
+				</td>
+				<td>
+					<div id="maincanvas"></div>
+				</td>
+				<td class="countcell">
+					<div class="count" id="rightcount"></div>
+					<div class="mincount" id="rightmin"></div>
+				</td>
+			</tr>
+		</table>
 		<div id ="input">
 			<span id="numpointsinput">
 				Number of points: <input id="numpoints" type="number" name="numpoints" min="3" max="100">
@@ -31,17 +45,16 @@
 			<label class='speedlabel' for='noanimationoption'>No animation</label>
 		</div>
 		<p class="description">
-			Given a set of points, a point is called a centerpoint if any hyperplane passing through this point
-			splits the set of points such that at least 1/(d + 1) points are on either side of
-			the hyperplane.
+			Given a set of d-dimensional points, a point is called a centerpoint if any hyperplane passing through this point
+			has at least 1/(d + 1) points on either side of it.
 		</p>
 		<p class="description">
 			A point p is considered a centerpoint of a set of 1D points S if at least 1/2 of the
-			points in S fall on either side of p. This is commonly referred to as the median of S.
+			points fall on either side of p. This is commonly referred to as the median of S.
 		</p>
 		<p class="description">
 			A point p is considered a centerpoint of a set of 2D points S if at least 1/3rd of the 
-			point in S fall on either side of l, where l is any line that passes through p.
+			point fall on either side of l, where l is any line that passes through p.
 			In most cases, there is not one unique centerpoint.  A set of points has an area
 			that contains all of its centerpoints.
 		</p>

@@ -561,13 +561,22 @@ function PointSet() {
 			linecount += 2;
 		}
 		
-		//make sure the query point is a valid centerpoint for each angle represented in the line list (test using the halfspacepointcount) 
-		var maxpointcount = Math.floor(2*(this._size / 3));
-		for(var i = 0; i < linecount; i++)
-		{
-			if (this.halfspacepointcount(linelist[i]) > maxpointcount)
-				return linelist[i];
+		// Find the line which has the most points on one side of it
+		var largestline;
+		var largestpoints = 0;
+		for(var i = 0; i < linecount; i++) {
+			var count = this.halfspacepointcount(linelist[i]);
+			if (count > largestpoints) {
+				largestline = linelist[i];
+				largestpoints = count;
+			}
 		}
+
+		// If the line with the largest point count if larger than 2/3rd of the total points, return it
+		if (largestpoints > Math.floor(2*(this._size / 3))) {
+			return largestline;
+		}
+
 		return null;
 	}
 	

@@ -104,6 +104,7 @@ function Canvas() {
 
 			c.stopanimation();
 			c.clearbackground();
+			c.clearcounts();
 
 			// Check if we should allow the user to show the solution
 			c.attempts++;
@@ -114,6 +115,28 @@ function Canvas() {
 			// Check if this is a solution
 			var centerpointline = c._pointset.findcentercounterline(c._selectedpoint);
 			if (centerpointline) {
+				var clockwise = c._pointset.halfspacepointcount(centerpointline);
+				var endpoints = centerpointline.getendpoints(c);
+				var p1 = endpoints[0];
+				var p2 = endpoints[1];
+
+				// Fill in the counts
+				if ((p1.y == 0 && p2.y == c.displayHeight)
+				 || (p1.y == 0 && p2.x == c.displayWidth)
+				 || (p1.y == 0 && p2.x == 0)
+				 || (p1.x == 0 && p2.y == c.displayHeight)
+				 || (p1.x == c.displayWidth && p2.y == c.displayHeight)
+				 || (p1.x == 0 && p2.x == c.displayWidth && p1.y < p2.y)
+				 || (p1.x == c.displayWidth && p2.x == 0 && p1.y < p2.y)
+				) {
+					c.setrightcount(clockwise);
+					c.setleftcount(c._pointset._size - clockwise);
+				}
+				else {
+					c.setleftcount(clockwise);
+					c.setrightcount(c._pointset._size - clockwise);
+				}
+				
 				centerpointline.draw(c);
 				c.issolution = false;
 				c.drawforeground();
@@ -167,6 +190,8 @@ function Canvas() {
 		c.reset = function() {
 			c.stopanimation();
 			c.resetsolutionbutton();
+			c.clearcounts();
+			c.clearmincounts();
 			c.clearcanvas();
 			$('#numpoints').val('');
 		}
@@ -270,6 +295,59 @@ function Canvas() {
 		}
 
 		/***********************************************************************
+		* clearcounts
+		*
+		* Description:
+		*	Clears the count circles
+		***********************************************************************/
+		c.clearcounts = function() {
+			$('#leftcount').html('');
+			$('#rightcount').html('');
+		}
+
+		/***********************************************************************
+		* setleftcount
+		*
+		* Description:
+		*	Sets the number displayed in the left circle
+		***********************************************************************/
+		c.setleftcount = function(num) {
+			$('#leftcount').html(num);
+		}
+
+		/***********************************************************************
+		* setrightcount
+		*
+		* Description:
+		*	Sets the number displayed in the right circle
+		***********************************************************************/
+		c.setrightcount = function(num) {
+			$('#rightcount').html(num);
+		}
+
+		/***********************************************************************
+		* clearmincounts
+		*
+		* Description:
+		*	Clears the minimum values under the count circles
+		***********************************************************************/
+		c.clearmincounts = function() {
+			$('#leftmin').html(' ');
+			$('#rightmin').html(' ');
+		}
+
+		/***********************************************************************
+		* setmincounts
+		*
+		* Description:
+		*	Sets the number displayed below the count circles
+		***********************************************************************/
+		c.setmincounts = function(num) {
+			$('#leftmin').html('at least ' + num);
+			$('#rightmin').html('at least ' + num);
+		}
+
+		/***********************************************************************
 		* setpointset
 		*
 		* Description:
@@ -286,6 +364,7 @@ function Canvas() {
 
 			c._pointset = new PointSet();
 			c._pointset.generaterandompoints(num, 0, c.displayWidth, 0, c.displayHeight);
+			c.setmincounts(Math.ceil(num/3));
 			c.redrawcanvas();
 		}
 

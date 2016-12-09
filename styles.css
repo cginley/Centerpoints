@@ -1,5 +1,7 @@
 body {
 	background: #CCC;
+	max-width: 1500px;
+	min-width: 1000px;
 }
 
 #pageheader {
@@ -7,11 +9,13 @@ body {
 	margin-bottom: 5px;
 }
 
-.description {
-	text-align: center;
-	margin: auto;
-	max-width: 700px;
-	padding: 5px;
+#pagebody {
+	width: 100%;
+	table-layout: fixed;
+}
+
+.countcell {
+	width: 25%;
 }
 
 #maincanvas {
@@ -24,6 +28,30 @@ body {
 	left: 0;
 	right: 0;
 	bottom: 0;
+}
+
+.count {
+	background: #FFF;
+	width: 100px;
+	height: 100px;
+	margin: auto;
+	border: 2px solid black;
+	border-radius: 50%;
+	line-height: 100px;
+	text-align: center;
+	font-size: 2em;
+}
+
+.mincount {
+	padding-top: 10px;
+	text-align: center;
+}
+
+.description {
+	text-align: center;
+	margin: auto;
+	max-width: 700px;
+	padding: 5px;
 }
 
 button {
