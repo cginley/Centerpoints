@@ -92,6 +92,22 @@ function Point(xcor, ycor) {
 	this.y = ycor;
 
 	/***************************************************************************
+	* equals
+	*
+	* Description:
+	*	tests if two points have the same coordinates
+	*
+	* Args:
+	*	p - a Point object
+	*
+	* Returns:
+	*	A boolean, returns true if the two points have the same coordinates
+	***************************************************************************/
+	this.equals = function(p) {
+		return (this.x == p.x && this.y == p.y);
+	}
+
+	/***************************************************************************
 	* move
 	*
 	* Description:
@@ -125,7 +141,25 @@ function Line(point1, point2) {
 	this._point2 = point2;
 	
 	/***************************************************************************
-	* getintersection
+	* equals
+	*
+	* Description:
+	*	Tests if two lines are the same
+	*
+	* Args:
+	*	l - a Line object
+	*
+	* Returns:
+	*	A boolean, returns true if the two lines are the same
+	***************************************************************************/
+	this.equals = function(l) {
+		var end1 = this.getEndPoints(-1000, 1000, -1000, 1000);
+		var end2 = l.getEndPoints(-1000, 1000, -1000, 1000);
+		return (end1[0].equals(end2[0]) && end1[1].equals(end2[1]));
+	}
+
+	/***************************************************************************
+	* getIntersection
 	*
 	* Description:
 	*	Finds the point of intersection between this line and another
@@ -137,7 +171,7 @@ function Line(point1, point2) {
 	*	a Point object - the intersection of the two lines if it exists
 	*	Null otherwise
 	***************************************************************************/
-	this.getintersection = function(line) {
+	this.getIntersection = function(line) {
 		// Extract the coordinates from the points of the lines
 		var x1 = this._point1.x;
 		var y1 = this._point1.y;
@@ -165,7 +199,7 @@ function Line(point1, point2) {
 	}
 
 	/***************************************************************************
-	* segmentlength
+	* segmentLength
 	*
 	* Description:
 	*	Computes the length of the line segment between the two points
@@ -176,12 +210,12 @@ function Line(point1, point2) {
 	* Returns:
 	*	A number - the length
 	***************************************************************************/
-	this.segmentlength = function() {
+	this.segmentLength = function() {
 		return window.GeomUtil.distance(this._point1, this._point2);
 	}
 
 	/***************************************************************************
-	* unitvector
+	* unitVector
 	*
 	* Description:
 	*	Computes the unit vector in the direction of this line
@@ -192,13 +226,13 @@ function Line(point1, point2) {
 	* Returns:
 	*	a Vector object
 	***************************************************************************/
-	this.unitvector = function() {
-		var len = this.segmentlength();
+	this.unitVector = function() {
+		var len = this.segmentLength();
 		return new Vector((this._point2.x - this._point1.x)/len, (this._point2.y - this._point1.y)/len);
 	}
 
 	/***************************************************************************
-	* normalvector
+	* normalVector
 	*
 	* Description:
 	*	Computes the normal vector (of unit length) in the counter-clockwise 
@@ -210,63 +244,64 @@ function Line(point1, point2) {
 	* Returns:
 	*	a Vector object
 	***************************************************************************/
-	this.normalvector = function() {
-		var len = this.segmentlength();
+	this.normalVector = function() {
+		var len = this.segmentLength();
 		return new Vector((this._point1.y - this._point2.y)/len, (this._point2.x - this._point1.x)/len);
 	}
 
 	/***************************************************************************
-	* getendpoints
+	* getEndPoints
 	*
 	* Description:
-	*	Calculates the endpoints of this line on the canvas.  This maintains the 
+	*	Calculates the endpoints of this line given boundaries.  This maintains the 
 	*	order of the points
 	*
 	* Args:
-	*	canvas - a P5 object where this line will be drawn
+	*	minx - the minimum x value allowed for the end points
+	*	maxx - the maximum x value allowed for the end points
+	*	miny - the minimum y value allowed for the end points
+	*	maxy - the maximum y value allowed for the end points
 	*
 	* Returns:
-	*	an array of two points
+	*	an array of two Point objects
 	***************************************************************************/
-	this.getendpoints = function(canvas) {
-		var width = canvas.displayWidth;
-		var height = canvas.displayHeight;
-
+	this.getEndPoints = function(minx, maxx, miny, maxy) {
 		var points = [];
 
 		// Vertical line
 		if (this._point1.x == this._point2.x) {
-			points.push(new Point(this._point1.x, 0));
-			points.push(new Point(this._point2.x, height));
+			points.push(new Point(this._point1.x, miny));
+			points.push(new Point(this._point2.x, maxy));
 		} 
 		// Horizontal line
 		else if (this._point1.y == this._point2.y) {
-			points.push(new Point(0, this._point1.y));
-			points.push(new Point(width, this._point2.y));
+			points.push(new Point(minx, this._point1.y));
+			points.push(new Point(maxx, this._point2.y));
 		} 
 		// All other cases
 		else {
-			var slope = (this._point2.y-this._point1.y)/(this._point2.x-this._point1.x);
-			var intercept1 = this._point1.y-slope*this._point1.x;
-			var intercept2 = (height-intercept1)/slope;
-			var intercept3 = slope*width+intercept1;
-			var intercept4 = -intercept1/slope;
+			var slope = (this._point2.y - this._point1.y) / (this._point2.x - this._point1.x);
+			var yintercept = this._point1.y - slope * this._point1.x;
+			var intercept1 = slope * minx + yintercept;
+			var intercept2 = (maxy - yintercept) / slope;
+			var intercept3 = slope * maxx + yintercept;
+			var intercept4 = (miny - yintercept) / slope;
 			var coordinates = [];
-			if ((intercept1 >= 0) && (intercept1 <= height)) {
-				coordinates.push(0);
+			if ((intercept1 >= miny) && (intercept1 <= maxy)) {
+				coordinates.push(minx);
 				coordinates.push(intercept1);
 			}
-			if ((intercept2 >= 0) && (intercept2 <= width)) {
+			if ((intercept2 >= minx) && (intercept2 <= maxx)) {
 				coordinates.push(intercept2);
-				coordinates.push(width);
+				coordinates.push(maxy);
 			}
-			if ((intercept3 >= 0) && (intercept3 <= height)) {
-				coordinates.push(width);
+			if ((intercept3 >= miny) && (intercept3 <= maxy)) {
+				coordinates.push(maxx);
 				coordinates.push(intercept3);
 			}
-			if ((intercept4 >= 0) && (intercept4 <= width)) {
+			if ((intercept4 >= minx) && (intercept4 <= maxx)) {
 				coordinates.push(intercept4);
-				coordinates.push(0);
+				coordinates.push(miny);
 			}
 
 			// Add the end points to the list in the correct order
@@ -274,7 +309,7 @@ function Line(point1, point2) {
 			var p2 = new Point(coordinates[2], coordinates[3]);
 			var fullline = new Line(p1, p2);
 			// If they are in the correct order
-			if (this.unitvector().equals(fullline.unitvector())) {
+			if (this.unitVector().equals(fullline.unitVector())) {
 				points.push(p1);
 				points.push(p2);
 			}
@@ -289,83 +324,19 @@ function Line(point1, point2) {
 	}
 
 	/***************************************************************************
-	* draw
+	* flip
 	*
 	* Description:
-	*	draws this line onto a canvas
+	*	Computes a new line which is this line rotated 180 degrees
 	*
 	* Args:
-	*	canvas - a P5 object where this line will be drawn
+	*	None
 	*
 	* Returns:
-	*	Null
+	*	a Line object
 	***************************************************************************/
-	this.draw = function(canvas) {
-		var verticies = this.getendpoints(canvas);
-
-		canvas.stroke(255, 0, 0);
-		canvas.strokeWeight(2);
-		canvas.line(verticies[0].x, verticies[0].y, verticies[1].x, verticies[1].y);
-		canvas.strokeWeight(1);
-	}
-
-	/***************************************************************************
-	* drawhalfspace
-	*
-	* Description:
-	*	draws this line onto a canvas with the clockwise halfspace shaded in
-	*
-	* Args:
-	*	canvas - a P5 object where this halfspace will be drawn
-	*
-	* Returns:
-	*	Null
-	***************************************************************************/
-	this.drawhalfspace = function(canvas) {
-		var width = canvas.displayWidth;
-		var height = canvas.displayHeight;
-		
-		var verticies = this.getendpoints(canvas);
-
-		var ccw = window.GeomUtil.orient;
-		var l = this;
-
-		// Find which corners are on the clockwise side
-		if (ccw(l._point1, l._point2, new Point(0, 0)) == -1) {
-			verticies.push(new Point(0, 0));
-		}
-		if (ccw(l._point1, l._point2, new Point(0, height)) == -1) {
-			verticies.push(new Point(0, height));
-		}
-		if (ccw(l._point1, l._point2, new Point(width, 0)) == -1) {
-			verticies.push(new Point(width, 0));
-		}
-		if (ccw(l._point1, l._point2, new Point(width, height)) == -1) {
-			verticies.push(new Point(width, height));
-		}
-
-		// Make sure all the points are in ccw order, with insertion sort
-		for (var i = 0; i < (verticies.length - 2); i++) {
-			for (var j = i; j < (verticies.length - 2); j++) {
-				if (ccw(verticies[i], verticies[j+1], verticies[j+2]) == 1) {
-					var temp = verticies[j+1];
-					verticies[j+1] = verticies[j+2];
-					verticies[j+2] = temp;
-				}
-			}
-		}
-
-		// Draw the shape
-		canvas.stroke(0);
-		canvas.fill(255, 100, 100);
-
-		canvas.beginShape();
-		for (var i = 0; i < (verticies.length); i++) {
-			canvas.vertex(verticies[i].x, verticies[i].y);
-		}
-		canvas.endShape(canvas.CLOSE);
-
-		return;
+	this.flip = function() {
+		return new Line(this._point2, this._point1);
 	}
 }
 
@@ -386,26 +357,9 @@ function Line(point1, point2) {
 function PointSet() {
 	this._points = [];
 	this._size = 0;
-	this._centroid = null;
 
 	/***************************************************************************
-	* samepoint
-	*
-	* Description:
-	*	tests if two points have the same coordinates
-	*
-	* Args:
-	*	pointa and pointb - two Point objects, whose coordinates are to be compared
-	*
-	* Returns:
-	*	A boolean, returns true if the two points have the same coordinates
-	***************************************************************************/
-	this.samepoint = function(pointa, pointb) {
-		return (pointa.x == pointb.x)&&(pointa.y == pointb.y);
-	}
-
-	/***************************************************************************
-	* addpoint
+	* addPoint
 	*
 	* Description:
 	*	Adds a point to this collection of points; an attempt to add a preexisting point will fail, and result in no changes
@@ -416,11 +370,11 @@ function PointSet() {
 	* Returns:
 	*	An integer - the number of points in the set after adding this new one; returns the current size on an attempted point duplication
 	***************************************************************************/
-	this.addpoint = function(point) {
-		for (var i = 0; i < this._size; i++) 
-		{
-			if (this.samepoint(point, this._points[i]))
+	this.addPoint = function(point) {
+		for (var i = 0; i < this._size; i++) {
+			if (point.equals(this._points[i])) {
 				return this._size;
+			}
 		}
 		this._points.push(point);
 		this._size++;
@@ -429,159 +383,7 @@ function PointSet() {
 	}
 
 	/***************************************************************************
-	* getminypoint
-	*
-	* Description:
-	*	Finds the point in this pointset that has the minimum y value
-	*
-	* Args:
-	*	None
-	*
-	* Returns:
-	*	a Point object
-	***************************************************************************/
-	this.getminypoint = function() {
-		if (!this._size) {
-			return;
-		}
-
-		var miny = this._points[0];
-		for (var i = 1; i < this._size; i++) {
-			if (this._points[i].y < miny.y) {
-				miny = this._points[i];
-			}
-		}
-		return miny;
-	}
-
-	/***************************************************************************
-	* halfspacepointcount
-	*
-	* Description:
-	*	counts points of this pointset on one side of a line
-	*
-	* Args:
-	*	points - a Line object, against whom the points will be compared
-	*
-	* Returns:
-	*	An integer - the number of points which are clockwise from the given line's end points
-	***************************************************************************/
-	this.halfspacepointcount = function(line) {
-		var runsum = 0;
-		for (var i = 0; i < this._size; i++) 
-		{
-			if (window.GeomUtil.orient(line._point1, line._point2, this._points[i]) == -1)
-				runsum++;
-		}
-		return runsum;
-	}
-
-	/***************************************************************************
-	* iscenterpoint
-	*
-	* Description:
-	*	determines whether given point is a centerpoint of the pointset
-	*
-	* Args:
-	*	querypoint - a Point object, which will be evaluated as a potential centerpoint
-	*
-	* Returns:
-	*	A boolean - true if the point is a centerpoint, false otherwise
-	***************************************************************************/
-	this.iscenterpoint = function(querypoint) {
-		var counterexample = this.findcentercounterline(querypoint);
-		if(counterexample == null)
-			return true;
-		else
-			return false;
-	}
-	
-	/***************************************************************************
-	* findcentercounterline
-	*
-	* Description:
-	*	finds a line illustrating that the query point is not a fit centerpoint, if such a line exists
-	*
-	* Args:
-	*	querypoint - a Point object, which will be evaluated as a potential centerpoint
-	*
-	* Returns:
-	*	A Line - the line should pass through querypoint and illustrate that it is not a center point 
-	***************************************************************************/
-	this.findcentercounterline = function(querypoint) {
-		
-		//make a list of points with the points below the query point getting rotated above it
-		var shiftedpoints = [];
-		for (var i = 0; i < this._size; i++)
-		{
-			var curpoint = this._points[i];
-			if(curpoint.y < querypoint.y)
-				shiftedpoints[i] = new Point((querypoint.x + (querypoint.x - curpoint.x)), (querypoint.y + (querypoint.y - curpoint.y)));
-			else
-				shiftedpoints[i] = curpoint;
-		}
-		
-		//sort the points in ccw order in relation to the query point using orient test. remove redundant colinear points
-		var numshiftedpoints = this._size; 
-		var sortedpoints = [];
-		var numsorted = 2;
-		sortedpoints[0] = new Point((querypoint.x + 1), querypoint.y);
-		sortedpoints[1] = new Point((querypoint.x - 1), querypoint.y);
-		for(var shiftedindex = 0; shiftedindex < numshiftedpoints; shiftedindex++)
-		{
-			var sortedindex = 0;
-			var curccw = window.GeomUtil.orient(querypoint, sortedpoints[sortedindex], shiftedpoints[shiftedindex]);
-			while(curccw == 1)
-			{
-				sortedindex++;
-				var curccw = window.GeomUtil.orient(querypoint, sortedpoints[sortedindex], shiftedpoints[shiftedindex]);
-			}
-			if(curccw == -1) //insert the new point into the sorted list
-			{
-				var insertionindex = sortedindex;
-				numsorted++;
-				for(sortedindex = numsorted - 1; sortedindex > insertionindex; sortedindex--)
-				{
-					sortedpoints[sortedindex] = sortedpoints[sortedindex - 1];
-				}
-				sortedpoints[insertionindex] = shiftedpoints[shiftedindex];
-			}
-			//if new point is colinear with another point we've already sorted, just ignore it
-			
-		}
-		
-		//make a list of lines intersecting the query point and the centroid of each pair of adjacent elements in the ordered point list (including query point (+1,+0) and query point (-1, +0))
-		var linelist = [];
-		var linecount = 0;
-		for(var curindex = 0; curindex < numsorted - 1; curindex++)
-		{
-			var curpt = new Point((sortedpoints[curindex].x + sortedpoints[curindex + 1].x)/2, (sortedpoints[curindex].y + sortedpoints[curindex + 1].y)/2);
-			linelist[2 * curindex] = new Line(querypoint, curpt);
-			linelist[(2 * curindex) + 1] = new Line(curpt, querypoint);
-			linecount += 2;
-		}
-		
-		// Find the line which has the most points on one side of it
-		var largestline;
-		var largestpoints = 0;
-		for(var i = 0; i < linecount; i++) {
-			var count = this.halfspacepointcount(linelist[i]);
-			if (count > largestpoints) {
-				largestline = linelist[i];
-				largestpoints = count;
-			}
-		}
-
-		// If the line with the largest point count if larger than 2/3rd of the total points, return it
-		if (largestpoints > Math.floor(2*(this._size / 3))) {
-			return largestline;
-		}
-
-		return null;
-	}
-	
-	/***************************************************************************
-	* removepoint
+	* removePoint
 	*
 	* Description:
 	*	Removes a point from this collection of points
@@ -592,9 +394,9 @@ function PointSet() {
 	* Returns:
 	*	An integer - the number of points in the set after removing this one
 	***************************************************************************/
-	this.removepoint = function(point) {
+	this.removePoint = function(point) {
 		var ind = this._points.indexOf(point);
-		if(ind > -1) {
+		if (ind > -1) {
 			this._points.splice(ind,1);
 			this._size--;
 			this._centroid = null;
@@ -603,7 +405,7 @@ function PointSet() {
 	}
 
 	/***************************************************************************
-	* generaterandompoints
+	* generateRandomPoints
 	*
 	* Description:
 	*	Adds a certain number of random points to the pointset
@@ -618,21 +420,164 @@ function PointSet() {
 	* Returns:
 	*	An integer - the number of points in the set after adding the random ones
 	***************************************************************************/
-	this.generaterandompoints = function(num, minx, maxx, miny, maxy) {
+	this.generateRandomPoints = function(num, minx, maxx, miny, maxy) {
 		var startsize = this._size;
 		while (this._size - startsize < num) {
 			var x = Math.floor(Math.random() * (maxx - minx + 1)) + minx;
 			var y = Math.floor(Math.random() * (maxy - miny + 1)) + miny;
-			this.addpoint(new Point(x, y));
+			this.addPoint(new Point(x, y));
 		}
 		return this._size;
+	}
+
+	/***************************************************************************
+	* getMinYPoint
+	*
+	* Description:
+	*	Finds the point in this pointset that has the minimum y value
+	*
+	* Args:
+	*	None
+	*
+	* Returns:
+	*	a Point object
+	***************************************************************************/
+	this.getMinYPoint = function() {
+		if (!this._size) {
+			return;
+		}
+
+		var miny = this._points[0];
+		for (var i = 1; i < this._size; i++) {
+			if (this._points[i].y < miny.y) {
+				miny = this._points[i];
+			}
+		}
+		return miny;
+	}
+
+	/***************************************************************************
+	* halfSpacePointCount
+	*
+	* Description:
+	*	counts points of this pointset on one side of a line
+	*
+	* Args:
+	*	points - a Line object, against whom the points will be compared
+	*
+	* Returns:
+	*	An integer - the number of points which are clockwise from the given line's end points
+	***************************************************************************/
+	this.halfSpacePointCount = function(line) {
+		var runsum = 0;
+		for (var i = 0; i < this._size; i++) {
+			if (window.GeomUtil.orient(line._point1, line._point2, this._points[i]) == -1) {
+				runsum++;
+			}
+		}
+		return runsum;
+	}
+
+	/***************************************************************************
+	* isCenterPoint
+	*
+	* Description:
+	*	determines whether given point is a centerpoint of the pointset
+	*
+	* Args:
+	*	querypoint - a Point object, which will be evaluated as a potential centerpoint
+	*
+	* Returns:
+	*	A boolean - true if the point is a centerpoint, false otherwise
+	***************************************************************************/
+	this.isCenterPoint = function(querypoint) {
+		return this.findCenterPointCounterExample(querypoint) ? false : true;
+	}
+	
+	/***************************************************************************
+	* findCenterPointCounterExample
+	*
+	* Description:
+	*	finds a line illustrating that the query point is not a fit centerpoint, if such a line exists
+	*
+	* Args:
+	*	querypoint - a Point object, which will be evaluated as a potential centerpoint
+	*
+	* Returns:
+	*	A Line - the line should pass through querypoint and illustrate that it is not a center point 
+	***************************************************************************/
+	this.findCenterPointCounterExample = function(querypoint) {
+		// Make a list of points with the points below the query point getting rotated above it
+		var shiftedpoints = [];
+		for (var i = 0; i < this._size; i++) {
+			var curpoint = this._points[i];
+			if(curpoint.y < querypoint.y) {
+				shiftedpoints[i] = new Point((querypoint.x + (querypoint.x - curpoint.x)), (querypoint.y + (querypoint.y - curpoint.y)));
+			}
+			else {
+				shiftedpoints[i] = curpoint;
+			}
+		}
+		
+		// Sort the points in ccw order in relation to the query point using orient test. remove redundant colinear points
+		var numshiftedpoints = this._size; 
+		var sortedpoints = [];
+		var numsorted = 2;
+		sortedpoints[0] = new Point((querypoint.x + 1), querypoint.y);
+		sortedpoints[1] = new Point((querypoint.x - 1), querypoint.y);
+		for(var shiftedindex = 0; shiftedindex < numshiftedpoints; shiftedindex++) {
+			var sortedindex = 0;
+			var curccw = window.GeomUtil.orient(querypoint, sortedpoints[sortedindex], shiftedpoints[shiftedindex]);
+			while(curccw == 1) {
+				sortedindex++;
+				var curccw = window.GeomUtil.orient(querypoint, sortedpoints[sortedindex], shiftedpoints[shiftedindex]);
+			}
+			// Insert the new point into the sorted list
+			if(curccw == -1) {
+				var insertionindex = sortedindex;
+				numsorted++;
+				for(sortedindex = numsorted - 1; sortedindex > insertionindex; sortedindex--) {
+					sortedpoints[sortedindex] = sortedpoints[sortedindex - 1];
+				}
+				sortedpoints[insertionindex] = shiftedpoints[shiftedindex];
+			}
+			//if new point is colinear with another point we've already sorted, just ignore it
+		}
+		
+		// Make a list of lines intersecting the query point and the centroid of each pair of adjacent elements in the ordered point list (including query point (+1,+0) and query point (-1, +0))
+		var linelist = [];
+		var linecount = 0;
+		for(var curindex = 0; curindex < numsorted - 1; curindex++) {
+			var curpt = new Point((sortedpoints[curindex].x + sortedpoints[curindex + 1].x)/2, (sortedpoints[curindex].y + sortedpoints[curindex + 1].y)/2);
+			linelist[2 * curindex] = new Line(querypoint, curpt);
+			linelist[(2 * curindex) + 1] = new Line(curpt, querypoint);
+			linecount += 2;
+		}
+		
+		// Find the line which has the most points on one side of it
+		var largestline;
+		var largestpoints = 0;
+		for(var i = 0; i < linecount; i++) {
+			var count = this.halfSpacePointCount(linelist[i]);
+			if (count > largestpoints) {
+				largestline = linelist[i];
+				largestpoints = count;
+			}
+		}
+
+		// If the line with the largest point count is larger than 2/3rd of the total points, return it
+		if (largestpoints > Math.floor(2*(this._size / 3))) {
+			return largestline;
+		}
+
+		return;
 	}
 
 	/***************************************************************************
 	* centroid
 	*
 	* Description:
-	*	Computes the centroid for this collectoin of points
+	*	Computes the centroid for this collection of points
 	*
 	* Args:
 	*	None
@@ -641,43 +586,18 @@ function PointSet() {
 	*	a Point object - the centroid of this collection of points
 	***************************************************************************/
 	this.centroid = function() {
-		if (this._centroid === null) {
-			var totalx = 0;
-			var totaly = 0;
-			for (var i = 0; i < this._size; i++) {
-				var p = this._points[i];
-				totalx += p.x;
-				totaly += p.y;
-			}
-			this._centroid = new Point(totalx/this._size, totaly/this._size);
-		}
-		return this._centroid;
-	}
-
-	/***************************************************************************
-	* draw
-	*
-	* Description:
-	*	Draws this collection of points onto a canvas
-	*
-	* Args:
-	*	canvas - a P5 object where this pointset will be drawn
-	*
-	* Returns:
-	*	Null
-	***************************************************************************/
-	this.draw = function(canvas) {
-		canvas.fill(0);
-		canvas.stroke(0);
+		var totalx = 0;
+		var totaly = 0;
 		for (var i = 0; i < this._size; i++) {
 			var p = this._points[i];
-			canvas.ellipse(p.x, p.y, 5, 5);
+			totalx += p.x;
+			totaly += p.y;
 		}
-		return;
+		return new Point(totalx / this._size, totaly / this._size);
 	}
 	
 	/***************************************************************************
-	* get_cpoint_boundry
+	* getCenterPointBoundaries
 	*
 	* Description:
 	*	Finds all halfspaces which define the pointset's centerpoint space
@@ -688,58 +608,194 @@ function PointSet() {
 	* Returns:
 	*	a list of Lines, in order of rotation.
 	***************************************************************************/
-	this.get_cpoint_boundry = function() {
-		var next = window.GeomUtil.find_next;
+	this.getCenterPointBoundaries = function() {
 		var ps = this;
 		// returns next line segment of rotation
 		var next_line = function(ln, add) {
-			return new Line(ln._point1,next(ln,ps,add));
-		}
-		
-		// Takes line segment [a,b] and returns segment [b,a]
-		var l_flip = function(ln) {
-			return new Line(ln._point2,ln._point1);
-		}
-		
-		// test point equality
-		var same_point = function(peq1,peq2) {
-			return ((peq1.x==peq2.x)&&(peq1.y==peq2.y));
-		}
-		
-		// Test line equality
-		var same_line = function(leq1,leq2) {
-			var peq1 = same_point(leq1._point1,leq2._point1);
-			var peq2 = same_point(leq1._point2,leq2._point2);
-			return ((peq1==1)&&(peq2==1));
-		}
+			return new Line(ln._point1, ps.findNextPoint(ln, add));
+		};
 		
 		// List of halfspace lines:
 		var lines = [];
-		// get first line
-		var l1 = window.GeomUtil.find_first(this);
+		// Get first line
+		var l1 = this.findFirstLine();
 		lines.push(l1);
-		// get size of 1/3 points needed out of halfspace
+		// Get size of 1/3 points needed out of halfspace
 		var size_hlfspc = Math.ceil(this._size/3.0);
 		
-		// find starting halfspace line
-		for(var i = 0; i < size_hlfspc-1; i++) {
+		// Find starting halfspace line
+		for (var i = 0; i < size_hlfspc-1; i++) {
 			lines.push(next_line(lines.slice(-1)[0],1));
 		}
 		
-		// keep track of starting line
+		// Keep track of starting line
 		var s_line = lines.slice(-1)[0];
-		lines.push(next_line(l_flip(lines.slice(-1)[0]),1));
+		lines.push(next_line(lines.slice(-1)[0].flip(),1));
 		var count = 1;
 		// Add all lines in rotation
-		while(same_line(s_line, lines.slice(-1)[0]) == 0) {
+		while (!s_line.equals(lines.slice(-1)[0])) {
 			count ++;
-			lines.push(next_line(l_flip(lines.slice(-1)[0])));
+			lines.push(next_line(lines.slice(-1)[0].flip()));
 			// Return error if line doesn't return back to start
 			if (count > 4*this._size*this._size) {
 				return 1;
 			}
 		}
 		return lines;
+	}
+
+	/***************************************************************************
+	* findNextPoint
+	*
+	* Description:
+	*	Finds the next point in ccw order wrt a line segment.
+	*	'add' determines order of collinear points on line segment.
+	*		If add=0 and collinear points wrt l.point1, l.point2 outside l, next
+	*			point will be collinear point on l nearest to l.point2
+	*		If add=1 and collinear points wrt l.point1, l.point2 outside l, next
+	*			point will be collinear point outside l nearest to l.point2
+	*
+	* Args:
+	*	l   - a line object
+	*	add - boolean
+	*
+	* Returns:
+	*	a point - the next point in ccw order
+	***************************************************************************/
+	this.findNextPoint = function(l, add) {
+		// Create PointSet L of potential next points ( [0,180) deg)
+		// and PointSet R of potential next points ( [180,360) deg)
+		var L  = new PointSet;
+		var R  = new PointSet;
+		l_exist = 0;
+		r_exist = 0;
+		for (var i = 0; i < this._size; i++) {
+			var pt  = this._points[i];
+			var ccw = window.GeomUtil.orient(l._point1, l._point2,pt);
+			if (ccw == 1) {
+				L.addPoint(pt);
+			}
+			else if (ccw == 0) {
+				var t = (pt.x-l._point1.x)/(l._point2.x-l._point1.x);
+				if (((t > 1.0) && (add == 1)) || ((t>0.0) && (t < 1.0) && (add == 0))) {
+					L.addPoint(pt);
+				}
+			}
+			else {
+				R.addPoint(pt)
+			}
+		}
+
+		// See if points in L and R
+		if (L._size > 0) {
+			l_exist = 1;
+		}
+		if (R._size > 0) {
+			r_exist = 1;
+		}
+
+		// Find next point from L
+		var pcL = L._points[0];
+		L.removePoint(pcL);
+		while (L._size>0) {
+			// Test if pc is on l; move to next section if so
+			if (window.GeomUtil.orient(l._point1,l._point2,pcL) == 0) {
+				break;
+			}
+			// Test if pt has smaller angle than pc
+			// If same angle, choose pt if closer to l._point1 than pc
+			var pt  = L._points[0];
+			L.removePoint(pt);
+			var ccw = window.GeomUtil.orient(l._point1,pcL,pt);
+			if (ccw == -1) {
+				pcL = pt;
+			}
+			else if (ccw == 0) {
+				var t = (pt.x-l._point1.x)/(pcL.x-l._point1.x);
+				if (t < 1.0) {
+					pcL = pt;
+				}
+			}
+		}
+
+		// Find next point from R
+		if (R._size > 0) {
+			var pcR = R._points[0];
+			R.removePoint(pcR);
+			while (R._size>0) {
+				// Test if pc is on l; move to next section if so
+				if (window.GeomUtil.orient(l._point1,l._point2,pcR) == 0) {
+					break;
+				}
+				// Test if pt has smaller angle than pc
+				// If same angle, choose pt if closer to l._point1 than pc
+				var pt  = R._points[0];
+				R.removePoint(pt);
+				var ccw = window.GeomUtil.orient(l._point1,pcR,pt);
+				if (ccw == -1) {
+					pcR = pt;
+				} 
+				else if (ccw == 0) {
+					var t = (pt.x-l._point1.x)/(pcR.x-l._point1.x);
+					if (t < 1.0) {
+						pcR = pt;
+					}
+				}
+			}
+		}
+
+		var pc = pcL
+		if (l_exist == 0 || (r_exist == 1 && window.GeomUtil.orient(l._point1,pcL,pcR) == 1)) {
+			pc = pcR;
+		} 
+
+		return pc;
+	}
+
+	/***************************************************************************
+	* findFirst
+	*
+	* Description:
+	*	Finds the first line segment lf in a set of points such that the
+	*	halfspace defined by lf contains all points
+	*
+	* Args:
+	*	None
+	*
+	* Returns:
+	*	a line - a line segment whose halfspace contains all points in P
+	***************************************************************************/
+	this.findFirstLine = function() {
+		// Ensure this point set contains enough points
+		if (this._size < 2) {
+			return 1;
+		}
+
+		// Point comparison for sorting
+		// Sort y, then x in ascending order (prefer top left of canvas)
+		function compare(a, b) {
+			if (a.y === b.y) {
+			  return (a.x < b.x) ? -1 : 1;
+			}
+			else {
+			  return (a.y < b.y) ? -1 : 1;
+			}
+		}
+
+		// Make copy of the points, sort, then return line with
+		// first two sorted points
+		var L  = this._points.slice(0);
+		L      = L.sort(compare);
+		var p1 = L[0];
+		var p2 = L[1];
+
+		// If p1  p2 not collinear, call findNextPoint to locate nearest point by angle
+		if (p1.y != p2.y) {
+			horz_pt = new Point(p1.x + 10, p1.y);
+			p2 = this.findNextPoint(new Line(p1, horz_pt), 1);
+		}
+
+		return new Line(p1, p2);
 	}
 }
 
@@ -850,186 +906,5 @@ window.GeomUtil = {
 
 		// Use Ptolemy's theorem to determine if they are cocylic (within an error of .00001)
 		return Math.abs((this.distance(p1, p3) * this.distance(p2, p4)) - (this.distance(p1, p2) * this.distance(p3, p4) + this.distance(p2, p3) * this.distance(p1, p4))) < .00001;
-	},
-	/***************************************************************************
-	* find_next
-	*
-	* Description:
-	*	Finds the next point in ccw order wrt a line segment.
-	*	'add' determines order of collinear points on line segment.
-	*		If add=0 and collinear points wrt l.point1, l.point2 outside l, next
-	*			point will be collinear point on l nearest to l.point2
-	*		If add=1 and collinear points wrt l.point1, l.point2 outside l, next
-	*			point will be collinear point outside l nearest to l.point2
-	*
-	* Args:
-	*	l   - a line object
-	*	P   - a PointSet object
-	*	add - boolean
-	*
-	* Returns:
-	*	a point - the next point in ccw order
-	***************************************************************************/
-	find_next: function(l,P,add) {
-		// Create PointSet L of potential next points ( [0,180) deg)
-		// and PointSet R of potential next points ( [180,360) deg)
-		var L  = new PointSet;
-		var R  = new PointSet;
-		l_exist = 0;
-		r_exist = 0;
-		for(var i = 0; i < P._size; i++){
-			var pt  = P._points[i];
-			var ccw = window.GeomUtil.orient(l._point1,l._point2,pt);
-			if (ccw == 1) {
-				L.addpoint(pt);
-			} else if (ccw == 0) {
-				var t = (pt.x-l._point1.x)/(l._point2.x-l._point1.x);
-				if ((t > 1.0) && (add == 1)) {
-					L.addpoint(pt);
-				} else if (((t>0.0) && (t < 1.0)) && (add == 0)) {
-					L.addpoint(pt);
-				}
-			} else {
-				R.addpoint(pt)
-			}
-		}
-		
-		// See if points in L and R
-		if(L._size > 0) {
-			l_exist = 1;
-		}
-		if(R._size > 0) {
-			r_exist = 1;
-		}
-		
-		// Find next point from L
-		var pcL = L._points[0];
-		L.removepoint(pcL);
-		while(L._size>0) {
-			// Test if pc is on l; move to next section if so
-			if(window.GeomUtil.orient(l._point1,l._point2,pcL) == 0) {
-				break;
-			}
-			// Test if pt has smaller angle than pc
-			// If same angle, choose pt if closer to l._point1 than pc
-			var pt  = L._points[0];
-			L.removepoint(pt);
-			var ccw = window.GeomUtil.orient(l._point1,pcL,pt);
-			if (ccw == -1) {
-				pcL = pt;
-			} else if (ccw == 0) {
-				var t = (pt.x-l._point1.x)/(pcL.x-l._point1.x);
-				if (t < 1.0) {
-					pcL = pt;
-				}
-			}
-		}
-		
-		// Find next point from R
-		if (R._size > 0) {
-			var pcR = R._points[0];
-			R.removepoint(pcR);
-			while(R._size>0) {
-				// Test if pc is on l; move to next section if so
-				if(window.GeomUtil.orient(l._point1,l._point2,pcR) == 0) {
-					break;
-				}
-				// Test if pt has smaller angle than pc
-				// If same angle, choose pt if closer to l._point1 than pc
-				var pt  = R._points[0];
-				R.removepoint(pt);
-				var ccw = window.GeomUtil.orient(l._point1,pcR,pt);
-				if (ccw == -1) {
-					pcR = pt;
-				} else if (ccw == 0) {
-					var t = (pt.x-l._point1.x)/(pcR.x-l._point1.x);
-					if (t < 1.0) {
-						pcR = pt;
-					}
-				}
-			}
-		}
-		
-		// Test if pcL closer to l than pcR
-		/*
-		console.log('point L',pcL)
-		console.log('point R',pcR)
-		*/
-		var pc = pcL
-		if(l_exist == 0) {
-			pc = pcR;
-		} else if (r_exist == 1) {
-			if (window.GeomUtil.orient(l._point1,pcL,pcR) == 1) {
-				pc = pcR;
-			}
-		}
-		
-		
-		/* This only runs if pc on l
-		if (L._size>0){
-			// Remove all points from L not on l
-			for (var i=0; i<L._size; i++) {
-				if(window.GeomUtil.orient(l._point1,l._point2,L._points[i]) != 0) {
-					L.removepoint(L._points[i]);
-					i--;
-				}
-			}
-			// Find point on l closest to l._point2
-			while(L._size>0){
-				var pt  = L._points[0];
-				L.removepoint(pt);
-				var t = (pt.x-l._point2.x)/(pc.x-l._point2.x);
-				if (t < 1.0) {
-					pc = pt;
-				}
-			}
-		}*/
-		return pc;
-	},
-	/***************************************************************************
-	* find_first
-	*
-	* Description:
-	*	Finds the first line segment lf in a set of points such that the
-	*	halfspace defined by lf contains all points
-	*	
-	*
-	* Args:
-	*	P   - a PointSet object
-	*
-	* Returns:
-	*	a line - a line segment whose halfspace contains all points in P
-	***************************************************************************/
-	find_first: function(P) {
-		// Ensure P contains enough points
-		if (P._size < 2) {
-			return 1;
-		}
-		
-		// Point comparison for sorting
-		// Sort y, then x in ascending order (prefer top left of canvas)
-		function compare(a, b) {
-			if (a.y === b.y) {
-			  return (a.x < b.x) ? -1 : 1;
-			}
-			else {
-			  return (a.y < b.y) ? -1 : 1;
-			}
-		}
-		
-		// Make copy of P points, sort, then return line with
-		// first two sorted points
-		var L  = P._points.slice(0);
-		L      = L.sort(compare);
-		var p1 = L[0];
-		var p2 = L[1];
-		
-		// If p1  p2 not collinear, call find_next to locate nearest point by angle
-		if (p1.y != p2.y) {
-			horz_pt = new Point(p1.x+10,p1.y);
-			p2 = window.GeomUtil.find_next(new Line(p1,horz_pt),P,1);
-		}
-		
-		return new Line(p1,p2);
 	}
 }

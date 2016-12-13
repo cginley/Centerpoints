@@ -1,2 +1,2 @@
-window.canvas = new Canvas();
-window.myp5 = new p5(window.canvas.pfive);
+window.constants = new Constants();
+window.myp5 = new p5(canvas);
